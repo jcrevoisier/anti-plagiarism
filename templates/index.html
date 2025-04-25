@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plagiarism Detector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #results {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            display: none;
+        }
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Plagiarism Detector</h1>
+    
+    <div class="form-group">
+        <label for="url">Enter URL to check for plagiarism:</label>
+        <input type="text" id="url" placeholder="https://example.com/article">
+    </div>
+    
+    <button onclick="checkPlagiarism()">Check for Plagiarism</button>
+    
+    <div class="loading" id="loading">
+        <p>Checking for plagiarism... This may take a minute.</p>
+    </div>
+    
+    <div id="results"></div>
+    
+    <script>
+        function checkPlagiarism() {
+            const url = document.getElementById('url').value;
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+            
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            
+            fetch('/check-plagiarism', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                
+                let resultsHtml = '<h2>Results</h2>';
+                
+                if (data.results && data.results.length > 0) {
+                    resultsHtml += '<p>Potential plagiarism found:</p>';
+                    
+                    data.results.forEach(result => {
+                        resultsHtml += `<div class="result-item">`;
+                        resultsHtml += `<p><strong>Text chunk:</strong> ${result.chunk}</p>`;
+                        
+                        if (result.sources) {
+                            resultsHtml += `<p><strong>Potential sources:</strong></p>`;
+                            resultsHtml += `<ul>`;
+                            result.sources.forEach(source => {
+                                resultsHtml += `<li><a href="${source}" target="_blank">${source}</a></li>`;
+                            });
+                            resultsHtml += `</ul>`;
+                        }
+                        
+                        if (result.error) {
+                            resultsHtml += `<p><strong>Error:</strong> ${result.error}</p>`;
+                        }
+                        
+                        resultsHtml += `</div><hr>`;
+                    });
+                } else {
+                    resultsHtml += '<p>No plagiarism detected or no results returned.</p>';
+                }
+                
+                document.getElementById('results').innerHTML = resultsHtml;
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+                document.getElementById('results').innerHTML = `<h2>Error</h2><p>${error.message}</p>`;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Ignore Python virtual environments
+venv/
+.env/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Ignore Git and editor files
+.git/
+.gitignore
+.idea/
+*.swp
+*.bak
+
+# Ignore cloud & deployment clutter
+.gcloudignore
+node_modules/
